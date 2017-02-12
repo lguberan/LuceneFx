@@ -24,6 +24,8 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.tika.Tika;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javafx.concurrent.Task;
 
@@ -35,6 +37,8 @@ import javafx.concurrent.Task;
  */
 public class IndexTask extends Task<List<IndexTask.IndexingError>>
 {
+	private static final Logger log = LoggerFactory.getLogger(IndexTask.class);
+	
 	private Directory dir;
 	private Path docPath;
 	private Path indexPath;
@@ -107,7 +111,7 @@ public class IndexTask extends Task<List<IndexTask.IndexingError>>
 		updateMessage(LuceneFx.tr("IndexTask.consolidate"));
 
 		Duration d = Duration.ofMillis(System.currentTimeMillis() - start);
-		System.out.println(d);
+		log.info("reindex time {} for '{}'", d, docPath);
 		
 		// NOTE: if you want to maximize search performance,
 		// you can optionally call forceMerge here. This can be
@@ -169,7 +173,7 @@ public class IndexTask extends Task<List<IndexTask.IndexingError>>
 		} catch (Exception e) {
 			
 			// document could not be indexed
-			e.printStackTrace();
+			log.warn("An error occured while indexing " + file, e);
 			errorList.add(new IndexingError(file, e));			
 		}
 	}

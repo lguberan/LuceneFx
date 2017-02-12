@@ -3,6 +3,9 @@ package com.guberan.luceneFx;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
@@ -21,6 +24,8 @@ import javafx.stage.Stage;
  */
 public class ProgressController implements Initializable
 {
+	private static final Logger log = LoggerFactory.getLogger(ProgressController.class);
+	
 	@FXML protected Label lblInfo;
 	@FXML protected Button btnAbort;
 	@FXML protected ProgressBar progressBar;
@@ -30,6 +35,7 @@ public class ProgressController implements Initializable
 	
 	@FXML public void onAbort(ActionEvent a)
 	{
+		log.debug("Worker '{}' cancelled.", a.getSource());
 		task.cancel();
 		close();
 	}
@@ -37,6 +43,7 @@ public class ProgressController implements Initializable
 
 	public void onSuccess(WorkerStateEvent event)
 	{
+		log.debug("Worker '{}' succeded.", event.getSource());
 		task = null;
 		close();
 	}
@@ -44,7 +51,7 @@ public class ProgressController implements Initializable
 	
 	public void onFailed(WorkerStateEvent event)
 	{
-		System.err.println("Task failed");
+		log.error("Worker '{}' failed.", event);
 		task = null;
 		close();
 	}

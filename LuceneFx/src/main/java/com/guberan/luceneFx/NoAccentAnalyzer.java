@@ -19,17 +19,19 @@ package com.guberan.luceneFx;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
+import org.apache.lucene.analysis.CharArraySet;
+import org.apache.lucene.analysis.LowerCaseFilter;
+import org.apache.lucene.analysis.StopFilter;
+import org.apache.lucene.analysis.StopwordAnalyzerBase;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.core.LowerCaseFilter;
-import org.apache.lucene.analysis.core.StopAnalyzer;
-import org.apache.lucene.analysis.core.StopFilter;
+import org.apache.lucene.analysis.WordlistLoader;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
 import org.apache.lucene.analysis.standard.StandardFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
-import org.apache.lucene.analysis.util.CharArraySet;
-import org.apache.lucene.analysis.util.StopwordAnalyzerBase;
-import org.apache.lucene.analysis.util.WordlistLoader;
 
 
 /**
@@ -41,18 +43,49 @@ import org.apache.lucene.analysis.util.WordlistLoader;
  */
 public final class NoAccentAnalyzer extends StopwordAnalyzerBase
 {
-
 	/** Default maximum allowed token length */
 	public static final int DEFAULT_MAX_TOKEN_LENGTH = 255;
 
 	private int maxTokenLength = DEFAULT_MAX_TOKEN_LENGTH;
 
+	// my stop words (english)
+    private final static List<String> stopWordsEN = Arrays.asList(
+    	      "a", "an", "and", "are", "as", "at", "be", "but", "by",
+    	      "for", "if", "in", "into", "is", "it",
+    	      "no", "not", "of", "on", "or", "such",
+    	      "that", "the", "their", "then", "there", "these",
+    	      "they", "this", "to", "was", "will", "with"
+    	    );
+
+	// my stop words (french)
+    private final static List<String> stopWordsFR = Arrays.asList("a", "ai", "aie", "aient", "aies", "ait", "as", "au", "aura", "aurai",
+			"auraient", "aurais", "aurait", "auras", "aurez", "auriez", "aurions", "aurons", "auront", "aux", "avaient",
+			"avais", "avait", "avec", "avez", "aviez", "avions", "avons", "ayant", "ayez", "ayons", "c", "ce", "ceci",
+			"cela", "cela", "ces", "cet", "cette", "d", "dans", "de", "des", "du", "elle", "en", "es", "est", "et",
+			"etaient", "etais", "etait", "etant", "ete", "etee", "etees", "etes", "etes", "etiez", "etions", "eu",
+			"eue", "eues", "eumes", "eurent", "eus", "eusse", "eussent", "eusses", "eussiez", "eussions", "eut", "eut",
+			"eutes", "eux", "fumes", "furent", "fus", "fusse", "fussent", "fusses", "fussiez", "fussions", "fut", "fut",
+			"futes", "ici", "il", "ils", "j", "je", "l", "la", "le", "les", "leur", "leurs", "lui", "m", "ma", "mais",
+			"me", "meme", "mes", "moi", "mon", "n", "ne", "nos", "notre", "nous", "on", "ont", "ou", "par", "pas",
+			"pour", "qu", "que", "quel", "quelle", "quelles", "quels", "qui", "s", "sa", "sans", "se", "sera", "serai",
+			"seraient", "serais", "serait", "seras", "serez", "seriez", "serions", "serons", "seront", "ses", "soi",
+			"soient", "sois", "soit", "sommes", "son", "sont", "soyez", "soyons", "suis", "sur", "t", "ta", "te", "tes",
+			"toi", "ton", "tu", "un", "une", "vos", "votre", "vous", "y");
+
 	/**
-	 * An unmodifiable set containing some common English words that are usually not
+	 * An unmodifiable set containing some common words that are usually not
 	 * useful for searching.
 	 */
-	public static final CharArraySet STOP_WORDS_SET = StopAnalyzer.ENGLISH_STOP_WORDS_SET;
+	public static final CharArraySet STOP_WORDS_SET;
 
+	static {
+		List<String> stopWords = new ArrayList<String>(stopWordsEN);
+		stopWords.addAll(stopWordsFR);
+		stopWords.sort(null);
+		final CharArraySet stopSet = new CharArraySet(stopWords, false);
+		STOP_WORDS_SET = CharArraySet.unmodifiableSet(stopSet);
+	}
+	
 
 	/**
 	 * Builds an analyzer with the given stop words.
@@ -110,8 +143,8 @@ public final class NoAccentAnalyzer extends StopwordAnalyzerBase
 		src.setMaxTokenLength(maxTokenLength);
 		TokenStream tok = new StandardFilter(src);
 		tok = new LowerCaseFilter(tok);
-		// add this filter to remove European accents : à -> a, Joël -> Joel etc...
-		tok = new ASCIIFoldingFilter(tok);		
+		// add this filter to remove European accents : ï¿½ -> a, Joï¿½l -> Joel etc...
+		tok = new ASCIIFoldingFilter(tok, false);		
 		tok = new StopFilter(tok, stopwords);
 		return new TokenStreamComponents(src, tok) {
 			@Override
@@ -121,4 +154,13 @@ public final class NoAccentAnalyzer extends StopwordAnalyzerBase
 			}
 		};
 	}
+
+	  
+	  @Override
+	  protected TokenStream normalize(String fieldName, TokenStream in) {
+	    TokenStream result = new StandardFilter(in);
+	    result = new LowerCaseFilter(result);
+	    return result;
+	  }
+
 }

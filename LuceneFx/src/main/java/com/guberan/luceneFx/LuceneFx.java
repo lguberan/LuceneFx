@@ -8,6 +8,7 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 import java.util.prefs.Preferences;
@@ -25,6 +26,8 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -50,10 +53,14 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputControl;
+import javafx.scene.image.Image;
 import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Modality;
@@ -73,8 +80,11 @@ public class LuceneFx extends Application implements Initializable
 	public static final String KEY_CONTENTS = "contents";
 	public static final String INDEX_DIR_NAME = ".lucene_index";
 	
+	private static final Logger log = LoggerFactory.getLogger(LuceneFx.class);
+	
 	// static resources and application object
 	private static ResourceBundle i18nBundle = ResourceBundle.getBundle("com.guberan.luceneFx.ResourceBundle");
+	// application reference
 	private static LuceneFx app;
 
 	// fx controls 
@@ -127,19 +137,18 @@ public class LuceneFx extends Application implements Initializable
 	public static LuceneFx getApp() { return app; }
 	
 	
+	
 	/**
-	 * savePreferences
+	 * save preferences using java.util.prefs package
 	 */
 	public void savePreferences() 
 	{
-		// save user preferences using java.util.prefs package
 		Preferences prefs = Preferences.userNodeForPackage(LuceneFx.class);	
 		prefs.put(PREF_DOC_PATH, getDocPath().toString());
 		prefs.put(PREF_INDEX_PATH, getIndexPath().toString());
 		prefs.put(PREF_REINDEX, String.valueOf(reindexProperty().get()));
 	}
-		
-		
+	
 	
 	/**
 	 * openIndex
@@ -165,17 +174,18 @@ public class LuceneFx extends Application implements Initializable
 			}
 			else {
 				// no index nor document directory !
+				// disable search button in GUI
 				btnSearch.setDisable(true);
 				return;
 			}
 			
-			if (rebuildIndex && getDocPath().toFile().exists())
+			if (rebuildIndex && getDocPath().toFile().exists()) {
 				reIndex();
+			}
 			
 			indexReader = DirectoryReader.open(luceneDir);
 			searcher = new IndexSearcher(indexReader);
-			analyzer = new NoAccentAnalyzer(); // new StandardAnalyzer();
-			//analyzer = new org.apache.lucene.collation.ICUCollationKeyAnalyzer(com.ibm.icu.text.Collator.getInstance(new com.ibm.icu.util.ULocale("da", "dk")));
+			analyzer = new NoAccentAnalyzer();
 			parser = new QueryParser(KEY_CONTENTS, analyzer);			
 			
 			resultList.clear();
@@ -232,6 +242,10 @@ public class LuceneFx extends Application implements Initializable
 		fxmlLoader.setController(this);			
 		stage.setScene(new Scene(fxmlLoader.load()));
 		stage.setTitle(tr("LuceneFx.stageName"));
+		stage.getIcons().addAll(
+				new Image(LuceneFx.class.getResourceAsStream("icon32.png")),
+				new Image(LuceneFx.class.getResourceAsStream("icon22.png")),
+				new Image(LuceneFx.class.getResourceAsStream("icon16.png")));
 		stage.show();
 		
 		// read preferences
@@ -239,7 +253,7 @@ public class LuceneFx extends Application implements Initializable
 		setIndexPath(Paths.get(prefs.get(PREF_INDEX_PATH, "")));
 		setDocPath(Paths.get(prefs.get(PREF_DOC_PATH, "")));
 		reindexProperty().set(Boolean.parseBoolean(prefs.get(PREF_REINDEX, "")));
-
+		
 		// open pref dialog if there are no preferences  
 		if (!getIndexPath().toFile().exists() && !getDocPath().toFile().exists())
 			onPref();
@@ -349,7 +363,7 @@ public class LuceneFx extends Application implements Initializable
 		PrefController cntl = (PrefController) loadFxmlInStage("Pref", false, (PrefController p) -> { } );
 		
 		if (cntl.getResultOK())
-			openIndex(true);
+			openIndex(reindexProperty().get());
 	}
 	
 	
@@ -369,13 +383,31 @@ public class LuceneFx extends Application implements Initializable
 	
 	
 	/**
-	 * a line in TableView was double clicked, open the document in desktop
+	 * a line in TableView was clicked, open the document in desktop
 	 * @param event MouseEvent
 	 */
 	@FXML public void onTableMouseClicked(MouseEvent event)
 	{
 		if (event.getClickCount() >= 2 && MouseButton.PRIMARY.equals(event.getButton())) {
 			openSelection();
+			event.consume();
+		}
+	}
+	
+	
+	/**
+	 * a line in TableView is dragged, copy a link to the document
+	 * @param event MouseEvent
+	 */
+	@FXML public void onDragDetected(MouseEvent event)
+	{
+		ResultDoc selection = tbl.getSelectionModel().getSelectedItem();
+		if (selection != null) {
+			Dragboard db = tbl.startDragAndDrop(TransferMode.COPY, TransferMode.LINK);
+			ClipboardContent content = new ClipboardContent();
+			File f = new File(selection.pathProperty().get());
+			content.putFiles(Collections.singletonList(f));
+			db.setContent(content);
 			event.consume();
 		}
 	}
@@ -401,6 +433,8 @@ public class LuceneFx extends Application implements Initializable
 	{
 		Alert alert = new Alert(AlertType.INFORMATION);
 		alert.setTitle(tr("About.title"));
+		Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+		stage.getIcons().add(new Image(this.getClass().getResourceAsStream("icon16.png")));
 		alert.setHeaderText(null);
 		alert.setContentText(tr("About.info"));
 		alert.showAndWait();		

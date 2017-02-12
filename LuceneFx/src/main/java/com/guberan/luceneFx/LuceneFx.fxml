@@ -67,7 +67,7 @@
 						<Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
 					</VBox.margin>
 				</HBox>
-				<TableView fx:id="tbl" onKeyTyped="#onKeyTyped" onMouseClicked="#onTableMouseClicked" VBox.vgrow="ALWAYS">
+				<TableView fx:id="tbl" onDragDetected="#onDragDetected" onKeyTyped="#onKeyTyped" onMouseClicked="#onTableMouseClicked" VBox.vgrow="ALWAYS">
 					<columns>
 						<TableColumn fx:id="colPath" text="path">
 							<cellValueFactory>
@@ -79,6 +79,10 @@
 							<cellValueFactory>
 								<PropertyValueFactory property="score" />
 							</cellValueFactory>
+							<!-- cellFactory>
+								<FormattedTableCellFactory alignment="right">
+								</FormattedTableCellFactory>
+							</cellFactory-->							
 						</TableColumn>
 					</columns>
 					<columnResizePolicy>
