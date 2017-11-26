@@ -8,7 +8,7 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 
-<VBox spacing="6.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.guberan.luceneFx.ProgressController">
+<VBox spacing="6.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.guberan.lucenefx.ProgressController">
 	<children>
 		<Label fx:id="lblInfo" text="Indexing ... " VBox.vgrow="NEVER" />
 		<ProgressBar fx:id="progressBar" minWidth="250.0" progress="0.0" VBox.vgrow="NEVER" />

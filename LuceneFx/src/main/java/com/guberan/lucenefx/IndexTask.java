@@ -1,4 +1,4 @@
-package com.guberan.luceneFx;
+package com.guberan.lucenefx;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -16,6 +16,8 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.LongPoint;
+import org.apache.lucene.document.SortedNumericDocValuesField;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
@@ -38,6 +40,8 @@ import javafx.concurrent.Task;
 public class IndexTask extends Task<List<IndexTask.IndexingError>>
 {
 	private static final Logger log = LoggerFactory.getLogger(IndexTask.class);
+
+	private static final long REFRESH_MILLIS = 250;
 	
 	private Directory dir;
 	private Path docPath;
@@ -50,6 +54,8 @@ public class IndexTask extends Task<List<IndexTask.IndexingError>>
 	private int fCount;
 	private int fProcessed;
 	private ArrayList<IndexTask.IndexingError> errorList = new ArrayList<>();
+	private long millis;
+	private boolean create = false;
 
 	
 	/**
@@ -67,15 +73,20 @@ public class IndexTask extends Task<List<IndexTask.IndexingError>>
 
 		Analyzer analyzer = new NoAccentAnalyzer();
 		IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
-
+		
+		create = !Files.exists(indexPath);
+		
 		// Add new documents to an existing index
-		iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-		// iwc.setRAMBufferSizeMB(256.0);
+		iwc.setOpenMode(create ? OpenMode.CREATE : OpenMode.CREATE_OR_APPEND);
+		iwc.setRAMBufferSizeMB(256.0);
 
 		writer = new IndexWriter(dir, iwc);
 		
 		//using tika facade class 
 		tika = new Tika();
+		
+		// time at last updateProgress() (GUI update)
+		millis = 0;
 	}
 
 
@@ -86,8 +97,14 @@ public class IndexTask extends Task<List<IndexTask.IndexingError>>
 	protected void incProcessed() 
 	{
 		fProcessed++;
-		updateProgress(fProcessed, fCount);
-		// updateMessage(String.valueOf(fProcessed));
+		
+		// refresh GUI only after a minimum of <REFRESH_MILLIS> milliseconds
+		if (System.currentTimeMillis() - millis > REFRESH_MILLIS) {
+			updateProgress(fProcessed, fCount);
+			NumberFormat fmt = NumberFormat.getIntegerInstance();
+			updateMessage(LuceneFx.tr("IndexTask.process", "", fmt.format(fProcessed), fmt.format(fCount), fmt.format(dirCount)));
+			millis = System.currentTimeMillis();
+		}
 	}
 
 
@@ -100,12 +117,12 @@ public class IndexTask extends Task<List<IndexTask.IndexingError>>
 	{
 		long start = System.currentTimeMillis();
 
-		// index all files;
+		// index all files
 		updateMessage(LuceneFx.tr("IndexTask.examine"));
 		Files.walkFileTree(docPath, new CountVisitor());
 
 		NumberFormat fmt = NumberFormat.getIntegerInstance();
-		updateMessage(LuceneFx.tr("IndexTask.process", "", fmt.format(fCount), fmt.format(dirCount)));
+		updateMessage(LuceneFx.tr("IndexTask.process", "", 0, fmt.format(fCount), fmt.format(dirCount)));
 		Files.walkFileTree(docPath, new IndexFileVisitor());
 
 		updateMessage(LuceneFx.tr("IndexTask.consolidate"));
@@ -155,21 +172,29 @@ public class IndexTask extends Task<List<IndexTask.IndexingError>>
 			// For example the long value 2011021714 would mean
 			// February 17, 2011, 2-3 PM.
 			long lastModified = attrs.lastModifiedTime().toMillis();
+			doc.add(new SortedNumericDocValuesField("modified", lastModified));
+			//doc.add(new NumericDocValuesField("modified", lastModified));
 			doc.add(new LongPoint("modified", lastModified));
+			doc.add(new StoredField("modified", lastModified));
 
 			// Add the contents of the file to a field named "contents". Specify a Reader,
 			// so that the text of the file is tokenized and indexed, but not stored.
 			// Note that FileReader expects the file to be in UTF-8 encoding.
 			// If that's not the case searching for special characters will fail.
-			// doc.add(new TextField("contents", new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))));
-			// doc.add(new TextField("contents", "test", Store.NO);		
+			// doc.add(new TextField("contents", new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))))
+			// doc.add(new TextField("contents", "test", Store.NO)	
 			doc.add(new TextField("contents", tika.parseToString(file), Field.Store.NO));
 
-			// Existing index (an old copy of this document may have been indexed) so
-			// we use updateDocument instead to replace the old one matching the exact
-			// path, if present:
-			writer.updateDocument(new Term("path", file.toString()), doc);
-
+			if (create) { // writer.getConfig().getOpenMode() == OpenMode.CREATE
+				// New index, so we just add the document (no old document can be there):
+				writer.addDocument(doc);
+			} else {
+				// Existing index (an old copy of this document may have been indexed) so
+				// we use updateDocument instead to replace the old one matching the exact
+				// path, if present:
+				writer.updateDocument(new Term("path", file.toString()), doc);
+			}
+		      
 		} catch (Exception e) {
 			
 			// document could not be indexed
@@ -227,7 +252,7 @@ public class IndexTask extends Task<List<IndexTask.IndexingError>>
 
 
 	/**
-	 * count each file and directory visited
+	 * A {@code FileVisitor} that count each file and directory visited
 	 */
 	public class CountVisitor implements FileVisitor<Path>
 	{

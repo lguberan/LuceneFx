@@ -1,4 +1,4 @@
-package com.guberan.luceneFx;
+package com.guberan.lucenefx;
 
 import java.io.File;
 import java.net.URL;
@@ -32,8 +32,8 @@ public class PrefController implements Initializable
 	@Override
 	public void initialize(URL location, ResourceBundle resources) 
 	{
-		txtDoc.setText(LuceneFx.getApp().getDocPath().toString());
-		txtIndex.setText(LuceneFx.getApp().getIndexPath().toString());
+		txtDoc.setText(LuceneFx.getApp().docPathProperty().get().toString());
+		txtIndex.setText(LuceneFx.getApp().indexPathProperty().get().toString());
 		cbxAutoUpdate.setSelected(LuceneFx.getApp().reindexProperty().get());
 	}
 
@@ -111,8 +111,8 @@ public class PrefController implements Initializable
 	@FXML public void onOK(ActionEvent a)
 	{
 		// save prefs;
-		LuceneFx.getApp().setDocPath(Paths.get(txtDoc.getText()));
-		LuceneFx.getApp().setIndexPath(Paths.get(txtIndex.getText()));
+		LuceneFx.getApp().docPathProperty().set(Paths.get(txtDoc.getText()));
+		LuceneFx.getApp().indexPathProperty().set(Paths.get(txtIndex.getText()));
 		LuceneFx.getApp().reindexProperty().set(cbxAutoUpdate.isSelected());
 		LuceneFx.getApp().savePreferences();
 		

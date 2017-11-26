@@ -1,4 +1,4 @@
-package com.guberan.luceneFx;
+package com.guberan.lucenefx;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -6,9 +6,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 import java.util.prefs.Preferences;
@@ -26,8 +31,6 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -49,6 +52,8 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.IndexRange;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -65,6 +70,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 /**
  * LuceneFx
@@ -74,16 +80,17 @@ import javafx.stage.Stage;
 public class LuceneFx extends Application implements Initializable
 {
 	// constants key name
-	public static final String PREF_INDEX_PATH = "index_path";
-	public static final String PREF_DOC_PATH = "doc_path";
+	public static final String PREF_INDEX_PATH = "indexPath";
+	public static final String PREF_DOC_PATH = "docPath";
 	public static final String PREF_REINDEX = "reindex";
+	public static final String PREF_MAX_RESULTS = "maxResults";
 	public static final String KEY_CONTENTS = "contents";
 	public static final String INDEX_DIR_NAME = ".lucene_index";
 	
-	private static final Logger log = LoggerFactory.getLogger(LuceneFx.class);
+//	private static final Logger log = LoggerFactory.getLogger(LuceneFx.class);
 	
 	// static resources and application object
-	private static ResourceBundle i18nBundle = ResourceBundle.getBundle("com.guberan.luceneFx.ResourceBundle");
+	private static ResourceBundle i18nBundle = ResourceBundle.getBundle("com.guberan.lucenefx.ResourceBundle");
 	// application reference
 	private static LuceneFx app;
 
@@ -113,28 +120,19 @@ public class LuceneFx extends Application implements Initializable
 	@FXML protected MenuItem mItemSelectAll;	
 
 	// fx properties
-	private final SimpleObjectProperty<Path> docPathProp = new SimpleObjectProperty<>(this, "docPath");
-	private final SimpleObjectProperty<Path> indexPathProp = new SimpleObjectProperty<>(this, "indexPath");
-	private final SimpleBooleanProperty reindexProp = new SimpleBooleanProperty(this, "reindex");
-	private final SimpleIntegerProperty maxResultsProp = new SimpleIntegerProperty(this, "maxResults", 1000);
+	
+	private final SimpleObjectProperty<Path> docPathProp = new SimpleObjectProperty<>(this, PREF_DOC_PATH);
+	private final SimpleObjectProperty<Path> indexPathProp = new SimpleObjectProperty<>(this, PREF_INDEX_PATH);
+	private final SimpleBooleanProperty reindexProp = new SimpleBooleanProperty(this, PREF_REINDEX);
+	private final SimpleIntegerProperty maxResultsProp = new SimpleIntegerProperty(this, PREF_MAX_RESULTS, 1000);
 	
 	public SimpleObjectProperty<Path> docPathProperty() { return docPathProp; }
 	public SimpleObjectProperty<Path> indexPathProperty() { return indexPathProp; }
 	public SimpleBooleanProperty reindexProperty() { return reindexProp; }
 	public SimpleIntegerProperty maxResultsProperty() { return maxResultsProp; }
-
-	public Path getDocPath() { return docPathProp.get(); }	
-	public void setDocPath(Path newDocDir) { docPathProp.set(newDocDir); }
-	public Path getIndexPath() { return indexPathProp.get(); }
-	public void setIndexPath(Path Index) {  indexPathProp.set(Index); }
-/*
-	public int getMaxResults() { return maxResultsProp.get(); }
-	public void setMaxResults(int newValue) { maxResultsProp.set(newValue); }
-
-	public boolean getReindex() { return reindexProp.get(); }
-	public void setReindex(boolean newValue) { reindexProp.set(newValue); }
-*/
+	
 	public static LuceneFx getApp() { return app; }
+	
 	
 	
 	
@@ -144,8 +142,8 @@ public class LuceneFx extends Application implements Initializable
 	public void savePreferences() 
 	{
 		Preferences prefs = Preferences.userNodeForPackage(LuceneFx.class);	
-		prefs.put(PREF_DOC_PATH, getDocPath().toString());
-		prefs.put(PREF_INDEX_PATH, getIndexPath().toString());
+		prefs.put(PREF_DOC_PATH, docPathProperty().get().toString());
+		prefs.put(PREF_INDEX_PATH, indexPathProp.get().toString());
 		prefs.put(PREF_REINDEX, String.valueOf(reindexProperty().get()));
 	}
 	
@@ -159,15 +157,16 @@ public class LuceneFx extends Application implements Initializable
 			if (luceneDir != null)
 				luceneDir.close();
 			
-			if (getIndexPath().toFile().exists())  {
+			if (Files.exists(indexPathProperty().get()))  {
 				// open current index directory
-				luceneDir = FSDirectory.open(getIndexPath());
+				luceneDir = FSDirectory.open(indexPathProperty().get());
 			}
-			else if (rebuildIndex && !getIndexPath().toString().isEmpty()) {
+			else if (!indexPathProperty().get().toString().isEmpty()) {
 				// will create new index here
-				luceneDir = FSDirectory.open(getIndexPath());
+				rebuildIndex = true;
+				luceneDir = FSDirectory.open(indexPathProperty().get());
 			}
-			else if (getDocPath().toFile().exists()) {
+			else if (Files.exists(docPathProperty().get())) {
 				// memory index
 				luceneDir = new RAMDirectory();
 				rebuildIndex = true; // force index rebuild
@@ -179,7 +178,7 @@ public class LuceneFx extends Application implements Initializable
 				return;
 			}
 			
-			if (rebuildIndex && getDocPath().toFile().exists()) {
+			if (rebuildIndex && Files.exists(docPathProperty().get())) {
 				reIndex();
 			}
 			
@@ -203,7 +202,7 @@ public class LuceneFx extends Application implements Initializable
 	public void reIndex() throws IOException
 	{
 		
-		IndexTask indexTask = new IndexTask(getDocPath(), getIndexPath(), luceneDir);		
+		IndexTask indexTask = new IndexTask(docPathProperty().get(), indexPathProperty().get(), luceneDir);		
 		new Thread(indexTask).start();
 
 		loadFxmlInStage("Progress", false, (ProgressController cntr) -> cntr.setTask(indexTask));
@@ -250,12 +249,12 @@ public class LuceneFx extends Application implements Initializable
 		
 		// read preferences
 		Preferences prefs = Preferences.userNodeForPackage(LuceneFx.class);
-		setIndexPath(Paths.get(prefs.get(PREF_INDEX_PATH, "")));
-		setDocPath(Paths.get(prefs.get(PREF_DOC_PATH, "")));
+		indexPathProperty().set(Paths.get(prefs.get(PREF_INDEX_PATH, "")));
+		docPathProperty().set(Paths.get(prefs.get(PREF_DOC_PATH, "")));
 		reindexProperty().set(Boolean.parseBoolean(prefs.get(PREF_REINDEX, "")));
 		
 		// open pref dialog if there are no preferences  
-		if (!getIndexPath().toFile().exists() && !getDocPath().toFile().exists())
+		if (!Files.exists(indexPathProperty().get()) && !Files.exists(docPathProperty().get()))
 			onPref();
 		else
 			openIndex(reindexProperty().get());	
@@ -631,17 +630,64 @@ public class LuceneFx extends Application implements Initializable
 		private final SimpleStringProperty path;
 		private final SimpleStringProperty title;
 		private final SimpleFloatProperty score;
+		private final SimpleObjectProperty<LocalDateTime> modified;
 
 		public SimpleStringProperty pathProperty() { return path; }
 		public SimpleStringProperty titleProperty() { return title; }
 		public SimpleFloatProperty scoreProperty() { return score; }
+		public SimpleObjectProperty<LocalDateTime> modifiedProperty() { return modified; }
 
 
 		public ResultDoc(Document doc, float score) 
 		{
 			this.path = new SimpleStringProperty(this, "path", doc.get("path"));
 			this.title = new SimpleStringProperty(this, "title", doc.get("subject"));
+			LocalDateTime modifiedLocalDateTime = new Date(doc.getField("modified").numericValue().longValue()).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+			this.modified = new SimpleObjectProperty<>(this, "modified", modifiedLocalDateTime);
 			this.score = new SimpleFloatProperty(this, "score", score);
+		}
+	}
+	
+
+	
+	/**
+	 * GenericCellFactory cell factory for our table.
+	 * need to be developed
+	 */
+	public static class GenericCellFactory<S, T> implements Callback<TableColumn<S, T>, TableCell<S, T>>
+	{
+		private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm");
+
+		@Override
+		public TableCell<S, T> call(TableColumn<S, T> param)
+		{
+			return new TableCell<S, T>() {
+				@Override
+				protected void updateItem(T item, boolean empty)
+				{
+					if (item == getItem())
+						return;
+
+					super.updateItem(item, empty);
+
+					if (item == null) {
+						super.setText(null);
+						super.setGraphic(null);
+					} else if (item instanceof Node) {
+						super.setText(null);
+						super.setGraphic((Node) item);
+					} else {
+						if (item instanceof LocalDateTime) {
+							super.setText(formatter.format((LocalDateTime) item));
+							super.setGraphic(null);
+						}
+						else {
+							super.setText(item.toString());
+							super.setGraphic(null);
+						}
+					}
+				}
+			};
 		}
 	}
 	

@@ -1,4 +1,4 @@
-package com.guberan.luceneFx;
+package com.guberan.lucenefx;
 
 import java.net.URL;
 import java.util.ResourceBundle;

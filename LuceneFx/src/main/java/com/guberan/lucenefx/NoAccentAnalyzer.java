@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.guberan.luceneFx;
+package com.guberan.lucenefx;
 
 
 import java.io.IOException;
@@ -49,7 +49,7 @@ public final class NoAccentAnalyzer extends StopwordAnalyzerBase
 	private int maxTokenLength = DEFAULT_MAX_TOKEN_LENGTH;
 
 	// my stop words (english)
-    private final static List<String> stopWordsEN = Arrays.asList(
+    private static final List<String> stopWordsEN = Arrays.asList(
     	      "a", "an", "and", "are", "as", "at", "be", "but", "by",
     	      "for", "if", "in", "into", "is", "it",
     	      "no", "not", "of", "on", "or", "such",
@@ -58,7 +58,7 @@ public final class NoAccentAnalyzer extends StopwordAnalyzerBase
     	    );
 
 	// my stop words (french)
-    private final static List<String> stopWordsFR = Arrays.asList("a", "ai", "aie", "aient", "aies", "ait", "as", "au", "aura", "aurai",
+    private static final List<String> stopWordsFR = Arrays.asList("a", "ai", "aie", "aient", "aies", "ait", "as", "au", "aura", "aurai",
 			"auraient", "aurais", "aurait", "auras", "aurez", "auriez", "aurions", "aurons", "auront", "aux", "avaient",
 			"avais", "avait", "avec", "avez", "aviez", "avions", "avons", "ayant", "ayez", "ayons", "c", "ce", "ceci",
 			"cela", "cela", "ces", "cet", "cette", "d", "dans", "de", "des", "du", "elle", "en", "es", "est", "et",
@@ -78,8 +78,9 @@ public final class NoAccentAnalyzer extends StopwordAnalyzerBase
 	 */
 	public static final CharArraySet STOP_WORDS_SET;
 
+	
 	static {
-		List<String> stopWords = new ArrayList<String>(stopWordsEN);
+		List<String> stopWords = new ArrayList<>(stopWordsEN);
 		stopWords.addAll(stopWordsFR);
 		stopWords.sort(null);
 		final CharArraySet stopSet = new CharArraySet(stopWords, false);
@@ -90,8 +91,7 @@ public final class NoAccentAnalyzer extends StopwordAnalyzerBase
 	/**
 	 * Builds an analyzer with the given stop words.
 	 * 
-	 * @param stopWords
-	 *            stop words
+	 * @param stopWords stop words
 	 */
 	public NoAccentAnalyzer(CharArraySet stopWords) {
 		super(stopWords);
@@ -137,14 +137,14 @@ public final class NoAccentAnalyzer extends StopwordAnalyzerBase
 
 
 	@Override
-	protected TokenStreamComponents createComponents(final String fieldName) 
+	protected TokenStreamComponents createComponents(final String fieldName)
 	{
 		final StandardTokenizer src = new StandardTokenizer();
 		src.setMaxTokenLength(maxTokenLength);
 		TokenStream tok = new StandardFilter(src);
 		tok = new LowerCaseFilter(tok);
 		// add this filter to remove European accents : � -> a, Jo�l -> Joel etc...
-		tok = new ASCIIFoldingFilter(tok, false);		
+		tok = new ASCIIFoldingFilter(tok, false);
 		tok = new StopFilter(tok, stopwords);
 		return new TokenStreamComponents(src, tok) {
 			@Override
@@ -155,12 +155,13 @@ public final class NoAccentAnalyzer extends StopwordAnalyzerBase
 		};
 	}
 
-	  
-	  @Override
-	  protected TokenStream normalize(String fieldName, TokenStream in) {
-	    TokenStream result = new StandardFilter(in);
-	    result = new LowerCaseFilter(result);
-	    return result;
-	  }
+
+	@Override
+	protected TokenStream normalize(String fieldName, TokenStream in)
+	{
+		TokenStream result = new StandardFilter(in);
+		result = new LowerCaseFilter(result);
+		return result;
+	}
 
 }
