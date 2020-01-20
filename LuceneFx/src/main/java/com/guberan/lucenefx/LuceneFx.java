@@ -1,6 +1,5 @@
 package com.guberan.lucenefx;
 
-import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -30,9 +29,10 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.store.MMapDirectory;
 
 import javafx.application.Application;
+//import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleFloatProperty;
@@ -68,6 +68,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.media.AudioClip;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -90,7 +91,7 @@ public class LuceneFx extends Application implements Initializable
 //	private static final Logger log = LoggerFactory.getLogger(LuceneFx.class);
 	
 	// static resources and application object
-	private static ResourceBundle i18nBundle = ResourceBundle.getBundle("com.guberan.lucenefx.ResourceBundle");
+	private static ResourceBundle i18nBundle = ResourceBundle.getBundle("com.guberan.lucenefx.resources.ResourceBundle");
 	// application reference
 	private static LuceneFx app;
 
@@ -168,7 +169,8 @@ public class LuceneFx extends Application implements Initializable
 			}
 			else if (Files.exists(docPathProperty().get())) {
 				// memory index
-				luceneDir = new RAMDirectory();
+				Path tempDirWithPrefix = Files.createTempDirectory("LuceneFx");
+				luceneDir = new MMapDirectory(tempDirWithPrefix);
 				rebuildIndex = true; // force index rebuild
 			}
 			else {
@@ -242,9 +244,9 @@ public class LuceneFx extends Application implements Initializable
 		stage.setScene(new Scene(fxmlLoader.load()));
 		stage.setTitle(tr("LuceneFx.stageName"));
 		stage.getIcons().addAll(
-				new Image(LuceneFx.class.getResourceAsStream("icon32.png")),
-				new Image(LuceneFx.class.getResourceAsStream("icon22.png")),
-				new Image(LuceneFx.class.getResourceAsStream("icon16.png")));
+				new Image(LuceneFx.class.getResourceAsStream("resources/icon32.png")),
+				new Image(LuceneFx.class.getResourceAsStream("resources/icon22.png")),
+				new Image(LuceneFx.class.getResourceAsStream("resources/icon16.png")));
 		stage.show();
 		
 		// read preferences
@@ -332,12 +334,20 @@ public class LuceneFx extends Application implements Initializable
 			// parsing an empty or blank string throws a parser Exception			
 			ex.printStackTrace();
 			resultList.clear();
-			java.awt.Toolkit.getDefaultToolkit().beep();
+			beep();
 		}
 		
 	}
-	
 
+	/**
+	 * Makes a beep
+	 */
+	public void beep() {
+		AudioClip beep = new AudioClip(getClass().getResource("resources/beep.mp3").toString());
+		beep.play();
+	}
+	
+	
 	/**
 	 * handle search command
 	 * Triggered by button click or enter key in search text field
@@ -373,9 +383,12 @@ public class LuceneFx extends Application implements Initializable
 	{		
 		try {
 	    	ResultDoc selection = tbl.getSelectionModel().getSelectedItem();
-	    	if (selection != null)
-	    		Desktop.getDesktop().open(new File(selection.pathProperty().get()));
-		} catch (IOException e) {
+	    	if (selection != null) {
+	    		//HostServices services = this.getHostServices();
+	    		//services.showDocument(selection.pathProperty().get()); sometimes not working !! 
+	    		java.awt.Desktop.getDesktop().open(new File(selection.pathProperty().get()));
+	    	}
+		} catch (Exception e) {
 			showException(e);
 		}
 	}
@@ -433,7 +446,7 @@ public class LuceneFx extends Application implements Initializable
 		Alert alert = new Alert(AlertType.INFORMATION);
 		alert.setTitle(tr("About.title"));
 		Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
-		stage.getIcons().add(new Image(this.getClass().getResourceAsStream("icon16.png")));
+		stage.getIcons().add(new Image(this.getClass().getResourceAsStream("resources/icon16.png")));
 		alert.setHeaderText(null);
 		alert.setContentText(tr("About.info"));
 		alert.showAndWait();		
@@ -629,19 +642,22 @@ public class LuceneFx extends Application implements Initializable
 	{
 		private final SimpleStringProperty path;
 		private final SimpleStringProperty title;
-		private final SimpleFloatProperty score;
+		private final SimpleIntegerProperty attachments;
 		private final SimpleObjectProperty<LocalDateTime> modified;
+		private final SimpleFloatProperty score;
 
 		public SimpleStringProperty pathProperty() { return path; }
 		public SimpleStringProperty titleProperty() { return title; }
-		public SimpleFloatProperty scoreProperty() { return score; }
+		public SimpleIntegerProperty attachmentsProperty() { return attachments; }
 		public SimpleObjectProperty<LocalDateTime> modifiedProperty() { return modified; }
+		public SimpleFloatProperty scoreProperty() { return score; }
 
 
 		public ResultDoc(Document doc, float score) 
 		{
 			this.path = new SimpleStringProperty(this, "path", doc.get("path"));
 			this.title = new SimpleStringProperty(this, "title", doc.get("subject"));
+			this.attachments = new SimpleIntegerProperty(this, "attachments", doc.getField("attachments").numericValue().intValue());
 			LocalDateTime modifiedLocalDateTime = new Date(doc.getField("modified").numericValue().longValue()).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 			this.modified = new SimpleObjectProperty<>(this, "modified", modifiedLocalDateTime);
 			this.score = new SimpleFloatProperty(this, "score", score);

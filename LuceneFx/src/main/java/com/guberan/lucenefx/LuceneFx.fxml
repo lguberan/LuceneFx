@@ -89,6 +89,13 @@
 								<PropertyValueFactory property="path" />
 							</cellValueFactory>
 						</TableColumn>
+						<TableColumn fx:id="colAttachments" maxWidth="240.0" minWidth="80.0" prefWidth="160.0" text="attachments">
+							<cellValueFactory>
+								<PropertyValueFactory property="attachments" />
+							</cellValueFactory>
+							<cellFactory> <com.guberan.lucenefx.LuceneFx.GenericCellFactory/>
+							</cellFactory>
+						</TableColumn>
 						<TableColumn fx:id="colModified" maxWidth="240.0" minWidth="80.0" prefWidth="160.0" text="modified">
 							<cellValueFactory>
 								<PropertyValueFactory property="modified" />
