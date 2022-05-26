@@ -1,4 +1,5 @@
 # LuceneFx
+
 Tiny unofficial javafx demo application for Apache's Lucene and Tika.
 
 ### license ###
@@ -13,3 +14,15 @@ Currently, there is no blog post coming with the project. You can contact me at 
 
 * Feel free to contribute to this project
 * Code contribution must use (free) BSD License
+
+### Build
+
+To run the project:
+
+    mvn clean javafx:run
+
+To create a fat jar:
+
+    mvn compile package
+    java -jar target/LuceneFx_0.8.4.jar
+

@@ -2,8 +2,8 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>Z:\e-mails\LuceneFx-0.8.3.jar</jar>
-  <outfile>Z:\e-mails\LuceneFx-0.8.3.exe</outfile>
+  <jar>target\LuceneFx_0.8.4.jar</jar>
+  <outfile>target\LuceneFx-0.8.4.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
@@ -14,30 +14,28 @@
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
   <icon></icon>
-  <singleInstance>
-    <mutexName>LuceneFx</mutexName>
-    <windowTitle></windowTitle>
-  </singleInstance>
   <jre>
-    <path>C:\Program Files\Java\openjdk-13.0.2</path>
+    <path></path>
     <bundledJre64Bit>false</bundledJre64Bit>
     <bundledJreAsFallback>false</bundledJreAsFallback>
-    <minVersion></minVersion>
+    <minVersion>1.8.0</minVersion>
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
     <runtimeBits>64/32</runtimeBits>
+    <initialHeapSize>1024</initialHeapSize>
+    <maxHeapSize>2048</maxHeapSize>
   </jre>
   <versionInfo>
-    <fileVersion>0.8.3.0</fileVersion>
-    <txtFileVersion>Version 0.8.3</txtFileVersion>
+    <fileVersion>0.8.4.0</fileVersion>
+    <txtFileVersion>Version 0.8.4</txtFileVersion>
     <fileDescription>LuceneFx</fileDescription>
     <copyright>Lucien Guberan Consulting</copyright>
-    <productVersion>0.8.3.0</productVersion>
-    <txtProductVersion>Version 0.8.3</txtProductVersion>
+    <productVersion>0.8.4.0</productVersion>
+    <txtProductVersion>Version 0.8.4</txtProductVersion>
     <productName>LuceneFx</productName>
-    <companyName></companyName>
+    <companyName>L. Guberan Consulting</companyName>
     <internalName>LuceneFx</internalName>
-    <originalFilename>LuceneFx-0.8.3.exe</originalFilename>
+    <originalFilename>LuceneFx-0.8.4.exe</originalFilename>
     <trademarks></trademarks>
     <language>ENGLISH_US</language>
   </versionInfo>
