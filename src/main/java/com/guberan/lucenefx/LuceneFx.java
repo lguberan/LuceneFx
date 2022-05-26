@@ -84,7 +84,7 @@ public class LuceneFx extends Application implements Initializable {
     protected Button btnSearch;
 
     // current result list
-    ObservableList<ResultDoc> resultList = FXCollections.observableArrayList();
+    protected ObservableList<ResultDoc> resultList = FXCollections.observableArrayList();
 
     // indexes and other object for lucene
     private Directory luceneDir;
