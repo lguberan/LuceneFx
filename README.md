@@ -24,5 +24,5 @@ To run the project:
 To create a fat jar:
 
     mvn compile package
-    java -jar target/LuceneFx_0.8.4.jar
+    java -jar target/LuceneFx_0.8.5.jar
 
