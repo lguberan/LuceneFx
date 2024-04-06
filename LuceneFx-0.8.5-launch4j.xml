@@ -2,40 +2,38 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>target\LuceneFx_0.8.4.jar</jar>
-  <outfile>target\LuceneFx-0.8.4.exe</outfile>
+  <jar>target\LuceneFx_0.8.5.jar</jar>
+  <outfile>target\LuceneFx-0.8.5.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
   <priority>normal</priority>
-  <downloadUrl></downloadUrl>
+  <downloadUrl>https://github.com/lguberan/LuceneFx/</downloadUrl>
   <supportUrl></supportUrl>
   <stayAlive>false</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
   <icon></icon>
   <jre>
-    <path></path>
-    <bundledJre64Bit>false</bundledJre64Bit>
-    <bundledJreAsFallback>false</bundledJreAsFallback>
+    <path>%JAVA_HOME%;%PATH%</path>
+    <requiresJdk>false</requiresJdk>
+    <requires64Bit>false</requires64Bit>
     <minVersion>1.8.0</minVersion>
     <maxVersion></maxVersion>
-    <jdkPreference>preferJre</jdkPreference>
-    <runtimeBits>64/32</runtimeBits>
     <initialHeapSize>1024</initialHeapSize>
     <maxHeapSize>2048</maxHeapSize>
   </jre>
   <versionInfo>
-    <fileVersion>0.8.4.0</fileVersion>
-    <txtFileVersion>Version 0.8.4</txtFileVersion>
+    <fileVersion>0.8.5.0</fileVersion>
+    <txtFileVersion>Version 0.8.5</txtFileVersion>
     <fileDescription>LuceneFx</fileDescription>
     <copyright>Lucien Guberan Consulting</copyright>
-    <productVersion>0.8.4.0</productVersion>
-    <txtProductVersion>Version 0.8.4</txtProductVersion>
+    <productVersion>0.8.5.0</productVersion>
+    <txtProductVersion>Version 0.8.5</txtProductVersion>
     <productName>LuceneFx</productName>
     <companyName>L. Guberan Consulting</companyName>
     <internalName>LuceneFx</internalName>
-    <originalFilename>LuceneFx-0.8.4.exe</originalFilename>
+    <originalFilename>LuceneFx-0.8.5.exe</originalFilename>
     <trademarks></trademarks>
     <language>ENGLISH_US</language>
   </versionInfo>
