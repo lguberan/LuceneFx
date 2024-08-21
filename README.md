@@ -2,6 +2,8 @@
 
 Tiny unofficial javafx demo application for Apache's Lucene and Tika.
 
+![image](https://github.com/user-attachments/assets/4c7856f3-22ed-4f7f-a27f-c988fb4d9cdd)
+
 ### license ###
 
 The source code is presented as is, with no warranties, under the (free) BSD license.
