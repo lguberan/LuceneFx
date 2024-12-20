@@ -24,7 +24,7 @@
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
         <slf4j.version>2.0.12</slf4j.version>
-        <logback.version>1.5.3</logback.version>
+        <logback.version>1.5.13</logback.version>
         <javax.mail.version>1.6.2</javax.mail.version>
         <lucene.version>9.10.0</lucene.version>
         <tika.version>2.9.2</tika.version>
