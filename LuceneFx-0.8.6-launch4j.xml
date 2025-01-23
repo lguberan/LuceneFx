@@ -2,8 +2,8 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>target\LuceneFx_0.8.5.jar</jar>
-  <outfile>target\LuceneFx-0.8.5.exe</outfile>
+  <jar>target\LuceneFx_0.8.6.jar</jar>
+  <outfile>target\LuceneFx-0.8.6.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
@@ -18,22 +18,22 @@
     <path>%JAVA_HOME%;%PATH%</path>
     <requiresJdk>false</requiresJdk>
     <requires64Bit>false</requires64Bit>
-    <minVersion>1.8.0</minVersion>
+    <minVersion>23</minVersion>
     <maxVersion></maxVersion>
     <initialHeapSize>1024</initialHeapSize>
     <maxHeapSize>2048</maxHeapSize>
   </jre>
   <versionInfo>
-    <fileVersion>0.8.5.0</fileVersion>
-    <txtFileVersion>Version 0.8.5</txtFileVersion>
+    <fileVersion>0.8.6.0</fileVersion>
+    <txtFileVersion>Version 0.8.6</txtFileVersion>
     <fileDescription>LuceneFx</fileDescription>
     <copyright>Lucien Guberan Consulting</copyright>
-    <productVersion>0.8.5.0</productVersion>
-    <txtProductVersion>Version 0.8.5</txtProductVersion>
+    <productVersion>0.8.6.0</productVersion>
+    <txtProductVersion>Version 0.8.6</txtProductVersion>
     <productName>LuceneFx</productName>
     <companyName>L. Guberan Consulting</companyName>
     <internalName>LuceneFx</internalName>
-    <originalFilename>LuceneFx-0.8.5.exe</originalFilename>
+    <originalFilename>LuceneFx-0.8.6.exe</originalFilename>
     <trademarks></trademarks>
     <language>ENGLISH_US</language>
   </versionInfo>

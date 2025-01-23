@@ -6,7 +6,7 @@
 
     <groupId>com.guberan.lucenefx</groupId>
     <artifactId>LuceneFx</artifactId>
-    <version>0.8.5</version>
+    <version>0.8.6</version>
     <packaging>jar</packaging>
     <name>LuceneFx</name>
 
@@ -14,22 +14,23 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>17</java.version>
+        <java.version>23</java.version>
+        <openjfx.version>23.0.1</openjfx.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.compiler.version>3.13.0</maven.compiler.version>
+        <maven.assembly.version>3.7.1</maven.assembly.version>
         <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
-        <javafx.version>22</javafx.version>
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
-        <slf4j.version>2.0.12</slf4j.version>
-        <logback.version>1.5.3</logback.version>
+        <slf4j.version>2.0.16</slf4j.version>
+        <logback.version>1.5.16</logback.version>
         <javax.mail.version>1.6.2</javax.mail.version>
-        <lucene.version>9.10.0</lucene.version>
-        <tika.version>2.9.2</tika.version>
-        <openjfx.version>22</openjfx.version>
-        <junit.version>5.10.2</junit.version>
+        <lucene.version>10.1.0</lucene.version>
+        <lucene.analyzers.icu.version>8.11.4</lucene.analyzers.icu.version>
+        <tika.version>3.0.0</tika.version>
+        <junit.version>5.11.4</junit.version>
     </properties>
 
     <organization>
@@ -128,7 +129,7 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-icu</artifactId>
-            <version>8.11.1</version>
+            <version>${lucene.analyzers.icu.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
@@ -203,7 +204,7 @@
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
-            <version>3.3.0</version>
+            <version>${maven.assembly.version}</version>
         </dependency>
     </dependencies>
 

@@ -25,6 +25,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
@@ -306,12 +307,13 @@ public class LuceneFx extends Application implements Initializable {
             // Collect search results
             TopDocs results = searcher.search(query, maxResultsProperty().get());
             ScoreDoc[] hits = results.scoreDocs;
+            StoredFields storedFields = searcher.storedFields();
 
             // show results in TableView
             resultList.clear();
 
             for (ScoreDoc hit : hits) {
-                Document doc = searcher.doc(hit.doc);
+                Document doc = storedFields.document(hit.doc);
                 resultList.add(new ResultDoc(doc, hit.score));
             }
         } catch (ParseException ex) {
@@ -475,7 +477,7 @@ public class LuceneFx extends Application implements Initializable {
     public void onShowingEdit() {
         TextInputControl focusedField = getFocusedTextField();
         String txt = (focusedField == null) ? "" : focusedField.getSelectedText();
-        boolean noTxt = (txt == null) || (txt.length() == 0);
+        boolean noTxt = (txt == null) || txt.isEmpty();
 
         mItemCut.setDisable(noTxt);
         mItemCopy.setDisable(noTxt);
