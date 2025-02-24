@@ -34,7 +34,7 @@ mvn clean javafx:run
 ### Creating a Fat JAR
 ```sh
 mvn compile package
-java -jar target/LuceneFx_0.8.5.jar
+java -jar target/LuceneFx_0.8.6.jar
 ```
 
 ## License
