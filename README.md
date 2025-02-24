@@ -1,30 +1,46 @@
 # LuceneFx
 
-Tiny unofficial javafx demo application for Apache's Lucene and Tika.
+## Overview
+LuceneFx is a lightweight **JavaFX desktop application** that demonstrates the power of **Apache Lucene and Tika** for document indexing and search. It allows users to quickly index all documents in a folder—including emails and attachments—and perform lightning-fast searches to retrieve relevant files.
 
-![image](https://github.com/user-attachments/assets/4c7856f3-22ed-4f7f-a27f-c988fb4d9cdd)
+![LuceneFx Screenshot](https://github.com/user-attachments/assets/4c7856f3-22ed-4f7f-a27f-c988fb4d9cdd)
 
-### license ###
+## Features
+- **Index all documents** in a selected folder, including attachments
+- **Fast keyword search** using Apache Lucene
+- **Open files instantly** by double-clicking search results
+- **Sortable results** by path, modified date, number of attachments, or relevance score
+- **Persistent indexes** stored in `.lucene_index`
 
-The source code is presented as is, with no warranties, under the (free) BSD license.
+## Tech Stack
+- **Java** (version from `pom.xml`)
+- **JavaFX** (Graphical User Interface)
+- **Apache Lucene & Tika** (Indexing and document parsing)
+- **Maven** (Dependency and build management)
 
-### further information ###
+## Installation & Usage
 
-Currently, there is no blog post coming with the project. You can contact me at lguberan @gmail.com
+### Prerequisites
+- **Java JDK** (version as per `pom.xml`)
+- **Maven** installed on your system
 
-### Contribution guidelines ###
+### Clone & Build
+```sh
+git clone https://github.com/lguberan/LuceneFx.git
+cd LuceneFx
+mvn clean javafx:run
+```
 
-* Feel free to contribute to this project
-* Code contribution must use (free) BSD License
+### Creating a Fat JAR
+```sh
+mvn compile package
+java -jar target/LuceneFx_0.8.5.jar
+```
 
-### Build
+## License
+This project is open-source and provided **as is**, under the **BSD License**.
 
-To run the project:
-
-    mvn clean javafx:run
-
-To create a fat jar:
-
-    mvn compile package
-    java -jar target/LuceneFx_0.8.5.jar
+## Contribution Guidelines
+- **Contributions are welcome!** Feel free to submit PRs to enhance the project.
+- All **code contributions must be licensed under the BSD License**.
 
